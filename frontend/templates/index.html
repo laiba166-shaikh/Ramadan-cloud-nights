@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Task Manager</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, sans-serif;
+      background: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .container { width: 100%; max-width: 560px; }
+
+    h1 { font-size: 1.5rem; margin-bottom: 1.25rem; color: #111; }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: .5rem;
+      background: #fff;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.1);
+      margin-bottom: 1.5rem;
+    }
+
+    input, textarea {
+      padding: .5rem .75rem;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: .95rem;
+      width: 100%;
+    }
+
+    textarea { resize: vertical; min-height: 60px; }
+
+    button[type="submit"] {
+      padding: .5rem;
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: .95rem;
+      cursor: pointer;
+    }
+
+    button[type="submit"]:hover { background: #1d4ed8; }
+
+    #todo-list { display: flex; flex-direction: column; gap: .75rem; }
+
+    .todo-card {
+      background: #fff;
+      border-radius: 8px;
+      padding: .85rem 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,.1);
+      display: flex;
+      align-items: flex-start;
+      gap: .75rem;
+    }
+
+    .todo-card.done .todo-title { text-decoration: line-through; color: #aaa; }
+
+    .todo-body { flex: 1; }
+    .todo-title { font-weight: 600; color: #111; }
+    .todo-desc { font-size: .85rem; color: #666; margin-top: .2rem; }
+
+    .actions { display: flex; gap: .4rem; flex-shrink: 0; }
+
+    .btn-toggle, .btn-delete {
+      border: none;
+      border-radius: 5px;
+      padding: .3rem .65rem;
+      font-size: .8rem;
+      cursor: pointer;
+    }
+
+    .btn-toggle { background: #e0f2fe; color: #0369a1; }
+    .btn-toggle:hover { background: #bae6fd; }
+    .btn-delete { background: #fee2e2; color: #dc2626; }
+    .btn-delete:hover { background: #fecaca; }
+
+    .empty { text-align: center; color: #aaa; font-size: .9rem; padding: 2rem 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Task Manager</h1>
+
+    <form id="todo-form">
+      <input id="title" type="text" placeholder="Title" required />
+      <textarea id="description" placeholder="Description (optional)"></textarea>
+      <button type="submit">Add Todo</button>
+    </form>
+
+    <div id="todo-list"></div>
+  </div>
+
+  <script>
+    const API = "{{ backend_url }}";
+
+    async function fetchTodos() {
+      const res = await fetch(`${API}/todos`);
+      const todos = await res.json();
+      render(todos);
+    }
+
+    async function createTodo(title, description) {
+      await fetch(`${API}/todos`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, description: description || null, done: false }),
+      });
+      fetchTodos();
+    }
+
+    async function toggleTodo(todo) {
+      await fetch(`${API}/todos/${todo.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: todo.title, description: todo.description, done: !todo.done }),
+      });
+      fetchTodos();
+    }
+
+    async function deleteTodo(id) {
+      await fetch(`${API}/todos/${id}`, { method: "DELETE" });
+      fetchTodos();
+    }
+
+    function render(todos) {
+      const list = document.getElementById("todo-list");
+      if (!todos.length) {
+        list.innerHTML = `<p class="empty">No todos yet. Add one above.</p>`;
+        return;
+      }
+      list.innerHTML = todos.map(t => `
+        <div class="todo-card ${t.done ? "done" : ""}">
+          <div class="todo-body">
+            <div class="todo-title">${t.title}</div>
+            ${t.description ? `<div class="todo-desc">${t.description}</div>` : ""}
+          </div>
+          <div class="actions">
+            <button class="btn-toggle" onclick='toggleTodo(${JSON.stringify(t)})'>
+              ${t.done ? "Undo" : "Done"}
+            </button>
+            <button class="btn-delete" onclick="deleteTodo(${t.id})">Delete</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    document.getElementById("todo-form").addEventListener("submit", e => {
+      e.preventDefault();
+      const title = document.getElementById("title").value.trim();
+      const description = document.getElementById("description").value.trim();
+      if (!title) return;
+      createTodo(title, description);
+      e.target.reset();
+    });
+
+    fetchTodos();
+  </script>
+</body>
+</html>

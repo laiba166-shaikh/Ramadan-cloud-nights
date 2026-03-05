@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cn-todo
+  labels:
+    app: cn-todo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cn-todo
+  template:
+    metadata:
+      labels:
+        app: cn-todo
+    spec:
+      containers:
+        - name: cn-todo
+          image: cn-todo:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8000
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "250m"
+              memory: "256Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cn-todo
+spec:
+  type: NodePort
+  selector:
+    app: cn-todo
+  ports:
+    - port: 80
+      targetPort: 8000
+      nodePort: 30080
