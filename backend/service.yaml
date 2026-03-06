@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: cn-todo-backend
+spec:
+  selector:
+    app: cn-todo-backend
+  ports:
+    - port: 8000
+      targetPort: 8000
