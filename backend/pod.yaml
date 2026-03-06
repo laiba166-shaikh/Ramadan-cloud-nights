@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: cn-todo-backend
+  labels:
+    app: cn-todo-backend
+spec:
+  containers:
+    - name: cn-todo-backend
+      image: cn-todo-be:dev
+      imagePullPolicy: Never
+      ports:
+        - containerPort: 8000

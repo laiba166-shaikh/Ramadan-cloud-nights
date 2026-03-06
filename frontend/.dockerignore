@@ -3,4 +3,5 @@ __pycache__
 *.pyc
 .git
 README.md
+.env
 hello.py
