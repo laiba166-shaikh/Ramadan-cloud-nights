@@ -5,7 +5,7 @@ metadata:
   labels:
     app: frontend
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: frontend
@@ -14,6 +14,9 @@ spec:
       labels:
         app: frontend
     spec:
+      volumes:
+        - name: shared-data
+          emptyDir: {}
       containers:
         - name: frontend
           image: cn-todo-fe:dev
@@ -23,3 +26,20 @@ spec:
           env:
             - name: BACKEND_URL
               value: "http://cn-todo-backend:8000"
+          volumeMounts:
+            - name: shared-data
+              mountPath: /shared
+      initContainers:
+        - name: wait-for-backend
+          image: busybox:1.28
+          command:
+            - sh
+            - -c
+            - |
+              echo "waiting for backend..."; sleep 2
+              echo "BACKEND_URL=http://cn-todo-backend:8000" > /shared/config.env
+              echo "READY_AT=$(date)" >> /shared/config.env
+              echo "Backend is ready. Config written to /shared/config.env"
+          volumeMounts:
+            - name: shared-data
+              mountPath: /shared
