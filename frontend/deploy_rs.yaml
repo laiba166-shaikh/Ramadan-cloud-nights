@@ -32,6 +32,7 @@ spec:
       initContainers:
         - name: wait-for-backend
           image: busybox:1.28
+          restartPolicy: Always
           command:
             - sh
             - -c
