@@ -1,3 +1,5 @@
+# Cloud Night 01 — monolith era. Single container serving the backend API on port 8000.
+# Predates the frontend/backend split; image 'cn-todo:latest' is the original unified image.
 apiVersion: apps/v1
 kind: Deployment
 metadata:

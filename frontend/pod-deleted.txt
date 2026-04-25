@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: cn-todo-frontend
+  labels:
+    app: cn-todo-frontend
+spec:
+  containers:
+    - name: cn-todo-frontend
+      image: cn-todo-fe:dev
+      imagePullPolicy: Never
+      ports:
+        - containerPort: 3000
+      env:
+        - name: BACKEND_URL
+          value: "http://10.1.0.73:8000"
